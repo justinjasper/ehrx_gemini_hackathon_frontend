@@ -151,6 +151,7 @@ class HybridQueryAgent:
             "question": question,
             "matched_elements": answer.get("elements", []),
             "reasoning": answer.get("reasoning", ""),
+            "answer_summary": answer.get("answer_summary", ""),
             "filter_stats": {
                 "original_elements": self._count_total_elements(),
                 "filtered_elements": len(filtered_schema["elements"]),
