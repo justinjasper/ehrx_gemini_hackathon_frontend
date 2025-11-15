@@ -74,7 +74,10 @@ COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
-COPY --chown=ehrx:ehrx . .
+COPY --chown=ehrx:ehrx ehrx/ ./ehrx/
+COPY --chown=ehrx:ehrx configs/ ./configs/
+COPY --chown=ehrx:ehrx app.py run_mvp_pipeline.py test.py test_query_only.py ./
+COPY --chown=ehrx:ehrx setup.py ./
 
 # Switch to non-root user
 USER ehrx
@@ -88,8 +91,9 @@ RUN mkdir -p /app/output /app/logs
 # - /credentials: Google Cloud credentials (optional)
 VOLUME ["/data", "/output", "/credentials"]
 
-# Default command: Show help/usage
-CMD ["python", "-c", "print('EHRX Pipeline Container\\n\\nAvailable scripts:\\n- python run_mvp_pipeline.py\\n- python test.py\\n- python test_query_only.py\\n\\nVolumes:\\n- /data: Mount your PDF files here\\n- /output: Processing results will be saved here\\n- /credentials: Mount your GCP credentials JSON here\\n\\nEnvironment Variables:\\n- GCP_PROJECT_ID or GOOGLE_CLOUD_PROJECT: Your GCP project ID\\n- GOOGLE_APPLICATION_CREDENTIALS: Path to credentials JSON\\n- GCP_LOCATION: GCP region (default: us-central1)\\n')"]
+# Default command: Start web server for Cloud Run
+# Cloud Run sets PORT environment variable (default 8080)
+CMD ["python", "app.py"]
 
 # Health check (optional - useful for orchestration)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \

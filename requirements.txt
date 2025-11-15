@@ -24,6 +24,11 @@ vertexai>=1.0.0
 pillow>=10.0.0
 python-dotenv>=1.0.0
 
+# Web server (for Cloud Run deployment)
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+
 # Development
 pytest>=8.0.0
 pytest-cov>=4.1.0
