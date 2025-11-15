@@ -1,14 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import {
   DocumentSummary,
   MatchedElement,
   OntologyDocument,
-  QueryResponse
+  QueryResponse,
+  SampleDocument
 } from "./types";
 import {
   fetchDocuments,
   fetchOntology,
+  fetchSampleDocuments,
+  processSampleDocument,
   queryDocument,
   uploadDocument
 } from "./api";
@@ -29,6 +32,14 @@ function App() {
   const [queryResult, setQueryResult] = useState<QueryResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cachedPdfFile, setCachedPdfFile] = useState<File | null>(null);
+  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+  const [sampleDocuments, setSampleDocuments] = useState<SampleDocument[]>([]);
+  const [samplesLoading, setSamplesLoading] = useState(false);
+  const [samplesError, setSamplesError] = useState<string | null>(null);
+  const [processingSampleId, setProcessingSampleId] = useState<string | null>(
+    null
+  );
+  const samplesFetchedRef = useRef(false);
 
   const loadDocuments = async () => {
     try {
@@ -46,6 +57,27 @@ function App() {
   useEffect(() => {
     loadDocuments();
   }, []);
+
+useEffect(() => {
+  if (samplesFetchedRef.current) return;
+  samplesFetchedRef.current = true;
+
+  const loadSamples = async () => {
+    setSamplesLoading(true);
+    setSamplesError(null);
+    try {
+      const response = await fetchSampleDocuments();
+      setSampleDocuments(response.samples ?? []);
+    } catch (err) {
+      console.error(err);
+      setSamplesError("Failed to load sample documents.");
+    } finally {
+      setSamplesLoading(false);
+    }
+  };
+
+  loadSamples();
+}, []);
 
   useEffect(() => {
     if (!selectedDocument) {
@@ -77,6 +109,7 @@ function App() {
     documentType: string
   ) => {
     setUploading(true);
+    setUploadMessage(null);
     setError(null);
     try {
       const response = await uploadDocument(file, pageRange, documentType);
@@ -84,11 +117,44 @@ function App() {
       setSelectedDocument(response.document_id);
       setCachedPdfFile(file);
       setActiveTab("ontology");
+      setQueryResult(null);
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "Upload failed.");
+      const message = err?.message || "Upload failed.";
+      setUploadMessage(message);
+      setError(message);
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleProcessSample = async (
+    filename: string,
+    pageRange: string,
+    documentType: string
+  ) => {
+    setProcessingSampleId(filename);
+    setUploadMessage(null);
+    setError(null);
+    try {
+      const response = await processSampleDocument(
+        filename,
+        pageRange,
+        documentType
+      );
+      await loadDocuments();
+      setSelectedDocument(response.document_id);
+      setCachedPdfFile(null);
+      setActiveTab("ontology");
+      setQueryResult(null);
+    } catch (err: any) {
+      console.error(err);
+      const message = err?.message || "Processing sample failed.";
+      setUploadMessage(message);
+      setError(message);
+      throw err;
+    } finally {
+      setProcessingSampleId(null);
     }
   };
 
@@ -147,7 +213,16 @@ function App() {
 
       <section className="tab-content">
         {activeTab === "upload" && (
-          <UploadTab onUpload={handleUpload} uploading={uploading} />
+          <UploadTab
+            onUpload={handleUpload}
+            onProcessSample={handleProcessSample}
+            uploading={uploading}
+            processingSampleId={processingSampleId}
+            samples={sampleDocuments}
+            samplesLoading={samplesLoading}
+            samplesError={samplesError}
+            uploadMessage={uploadMessage}
+          />
         )}
 
         {activeTab === "ontology" && (

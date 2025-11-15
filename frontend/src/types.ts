@@ -67,3 +67,14 @@ export interface QueryResponse {
   filter_stats?: Record<string, unknown>;
 }
 
+export interface SampleDocument {
+  id: string;
+  filename: string;
+  display_name: string;
+  size_bytes?: number;
+}
+
+export interface SampleDocumentsResponse {
+  samples: SampleDocument[];
+}
+

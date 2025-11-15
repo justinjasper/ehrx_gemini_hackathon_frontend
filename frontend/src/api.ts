@@ -2,6 +2,7 @@ import {
   DocumentSummary,
   OntologyDocument,
   QueryResponse,
+  SampleDocumentsResponse,
   UploadResponse
 } from "./types";
 import { appConfig } from "./config";
@@ -68,5 +69,39 @@ export async function queryDocument(
     }
   );
   return handleResponse<QueryResponse>(response);
+}
+
+export async function fetchSampleDocuments(): Promise<SampleDocumentsResponse> {
+  const response = await fetch(withBase("/sample-documents"));
+  return handleResponse<SampleDocumentsResponse>(response);
+}
+
+export async function processSampleDocument(
+  filename: string,
+  pageRange: string,
+  documentType: string
+): Promise<
+  UploadResponse & {
+    source?: string;
+    filename?: string;
+  }
+> {
+  const response = await fetch(
+    withBase(
+      `/sample-documents/${encodeURIComponent(filename)}/process`
+    ),
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        page_range: pageRange,
+        document_type: documentType
+      })
+    }
+  );
+
+  return handleResponse(response);
 }
 
