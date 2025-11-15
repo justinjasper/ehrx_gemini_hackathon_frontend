@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     poppler-utils \
     tesseract-ocr \
     tesseract-ocr-eng \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
@@ -52,12 +52,12 @@ ENV PYTHONUNBUFFERED=1 \
 # Install runtime system dependencies
 # - poppler-utils: PDF processing (pdf2image)
 # - tesseract-ocr: OCR text extraction
-# - libgl1-mesa-glx, libglib2.0-0: Required for OpenCV
+# - libgl1, libglib2.0-0: Required for OpenCV
 RUN apt-get update && apt-get install -y --no-install-recommends \
     poppler-utils \
     tesseract-ocr \
     tesseract-ocr-eng \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
