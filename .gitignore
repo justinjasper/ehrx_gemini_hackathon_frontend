@@ -53,10 +53,8 @@ assets/
 *.csv
 *.jsonl
 *.json
-!configs/*.yaml
 !/frontend/package.json
 !/frontend/package-lock.json
-# !configs/*.json
 
 # Logs
 *.log
@@ -76,9 +74,9 @@ temp/
 .claude/
 
 
-SENSITIVE_ehr1_copy.pdf
-SENSITIVE_ehr2_copy.pdf
-test_output
 .env
 .secrets
 output/
+node_modules/
+frontend/dist/
+frontend/.npm-cache/

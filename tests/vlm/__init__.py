@@ -1,1 +1,0 @@
-"""VLM module tests."""
