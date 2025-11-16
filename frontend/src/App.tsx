@@ -11,6 +11,7 @@ import {
   fetchDocuments,
   fetchOntology,
   fetchSampleDocuments,
+  fetchSamplePdf,
   processSampleDocument,
   queryDocument,
   uploadDocument
@@ -144,7 +145,17 @@ useEffect(() => {
       );
       await loadDocuments();
       setSelectedDocument(response.document_id);
-      setCachedPdfFile(null);
+      
+      // Fetch and cache the sample PDF for query tab overlays
+      try {
+        const samplePdf = await fetchSamplePdf(filename);
+        setCachedPdfFile(samplePdf);
+      } catch (pdfErr) {
+        console.warn("Failed to fetch sample PDF for preview:", pdfErr);
+        // Don't fail the whole operation if PDF fetch fails
+        setCachedPdfFile(null);
+      }
+      
       setActiveTab("ontology");
       setQueryResult(null);
     } catch (err: any) {

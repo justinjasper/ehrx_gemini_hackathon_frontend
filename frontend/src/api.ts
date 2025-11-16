@@ -105,3 +105,14 @@ export async function processSampleDocument(
   return handleResponse(response);
 }
 
+export async function fetchSamplePdf(filename: string): Promise<File> {
+  const response = await fetch(
+    withBase(`/sample-documents/${encodeURIComponent(filename)}`)
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to fetch sample PDF: ${response.statusText}`);
+  }
+  const blob = await response.blob();
+  return new File([blob], filename, { type: "application/pdf" });
+}
+

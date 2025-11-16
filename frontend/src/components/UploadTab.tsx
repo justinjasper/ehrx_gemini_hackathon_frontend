@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { SampleDocument } from "../types";
+import { fetchSamplePdf } from "../api";
+import PDFPreviewModal from "./PDFPreviewModal";
 
 type UploadMode = "sample" | "upload";
 
@@ -49,6 +51,9 @@ const UploadTab = ({
   const [samplePageRange, setSamplePageRange] = useState("all");
   const [sampleDocumentType, setSampleDocumentType] =
     useState("Clinical EHR");
+  const [previewFile, setPreviewFile] = useState<File | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
 
   const handleUploadSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -62,6 +67,20 @@ const UploadTab = ({
     } catch (error) {
       // Error is surfaced by parent; avoid unhandled rejection logs.
       console.error(error);
+    }
+  };
+
+  const handlePreview = async (filename: string) => {
+    setPreviewLoading(true);
+    setPreviewError(null);
+    try {
+      const file = await fetchSamplePdf(filename);
+      setPreviewFile(file);
+    } catch (error: any) {
+      console.error(error);
+      setPreviewError(error?.message || "Failed to load PDF preview");
+    } finally {
+      setPreviewLoading(false);
     }
   };
 
@@ -165,11 +184,10 @@ const UploadTab = ({
                               <button
                                 type="button"
                                 className="btn btn--secondary"
-                                onClick={() =>
-                                  alert("Preview not implemented yet.")
-                                }
+                                onClick={() => handlePreview(sample.filename)}
+                                disabled={previewLoading}
                               >
-                                Preview
+                                {previewLoading ? "Loading…" : "Preview"}
                               </button>
                               <button
                                 type="button"
@@ -201,63 +219,77 @@ const UploadTab = ({
         </div>
       )}
 
+      <PDFPreviewModal
+        file={previewFile}
+        isOpen={!!previewFile}
+        onClose={() => {
+          setPreviewFile(null);
+          setPreviewError(null);
+        }}
+        title={previewFile?.name || "PDF Preview"}
+      />
+
+      {previewError && (
+        <div className="alert alert--error">{previewError}</div>
+      )}
+
       {mode === "upload" && (
         <form className="grid" onSubmit={handleUploadSubmit}>
-          <div className="form-group">
-            <label htmlFor="file">PDF File</label>
-            <input
-              id="file"
-              type="file"
-              accept="application/pdf"
-              onChange={(event) =>
-                setFile(event.target.files ? event.target.files[0] : null)
-              }
-              required
-              disabled={uploading}
-            />
-            <small>Maximum size ~32 MB (Cloud Run request limit).</small>
-          </div>
+      <div className="form-group">
+        <label htmlFor="file">PDF File</label>
+        <input
+          id="file"
+          type="file"
+          accept="application/pdf"
+          onChange={(event) =>
+            setFile(event.target.files ? event.target.files[0] : null)
+          }
+          required
+          disabled={uploading}
+        />
+        <small>Maximum size ~32 MB (Cloud Run request limit).</small>
+      </div>
 
-          <div className="grid grid--two-columns">
-            <div className="form-group">
-              <label htmlFor="pageRange">Page Range</label>
-              <input
-                id="pageRange"
+      <div className="grid grid--two-columns">
+        <div className="form-group">
+          <label htmlFor="pageRange">Page Range</label>
+          <input
+            id="pageRange"
                 value={uploadPageRange}
                 onChange={(event) => setUploadPageRange(event.target.value)}
-                placeholder='Example: "all" or "1-10"'
-                disabled={uploading}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="documentType">Document Type</label>
-              <input
-                id="documentType"
+            placeholder='Example: "all" or "1-10"'
+            disabled={uploading}
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="documentType">Document Type</label>
+          <input
+            id="documentType"
                 value={uploadDocumentType}
                 onChange={(event) => setUploadDocumentType(event.target.value)}
-                disabled={uploading}
-              />
-            </div>
-          </div>
+            disabled={uploading}
+          />
+        </div>
+      </div>
 
-          <button
-            className="btn"
-            type="submit"
-            disabled={!file || uploading}
-          >
-            {uploading ? "Uploading…" : "Upload & Process"}
-          </button>
+      <button
+          className="btn"
+          type="submit"
+          disabled={!file || uploading}
+        >
+          {uploading ? "Uploading…" : "Upload & Process"}
+        </button>
           <p className="muted small-note">
             Note: Uploads will take ~5 minutes.
           </p>
 
-          {!file && (
-            <div className="card">
+      {!file && (
+        <div className="card">
               <strong>Tip:</strong> After upload completes, switch to the
               Ontology tab to explore results, then the Query tab for QA.
-            </div>
-          )}
-        </form>
+        </div>
+      )}
+    </form>
       )}
     </div>
   );
