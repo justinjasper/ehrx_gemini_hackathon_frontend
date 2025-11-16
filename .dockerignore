@@ -48,8 +48,8 @@ debug/
 # Temporary files
 *.tmp
 *.bak
-tmp/
-temp/
+# tmp/
+# temp/
 
 # Large data files (mount as volumes instead)
 SampleEHR_docs/

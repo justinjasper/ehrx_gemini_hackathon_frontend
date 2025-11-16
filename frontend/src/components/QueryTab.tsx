@@ -11,6 +11,8 @@ interface QueryTabProps {
   pdfFile: File | null;
   pageInfoMap: Map<number, { width_px?: number; height_px?: number }>;
   ontologyAvailable: boolean;
+  documents: { document_id: string; total_pages: number }[];
+  onSelectDocument: (id: string) => void;
 }
 
 const QueryTab = ({
@@ -20,7 +22,9 @@ const QueryTab = ({
   documentId,
   pdfFile,
   pageInfoMap,
-  ontologyAvailable
+  ontologyAvailable,
+  documents,
+  onSelectDocument
 }: QueryTabProps) => {
   const [question, setQuestion] = useState("");
   const [highlightedElementId, setHighlightedElementId] = useState<
@@ -80,6 +84,21 @@ const QueryTab = ({
   return (
     <div className="grid">
       <div className="card">
+        <div className="form-group">
+          <label htmlFor="queryDocument">Select Processed Document</label>
+          <select
+            id="queryDocument"
+            value={documentId}
+            onChange={(e) => onSelectDocument(e.target.value)}
+          >
+            <option value="">Select a processed document</option>
+            {documents.map((d) => (
+              <option key={d.document_id} value={d.document_id}>
+                {d.document_id} ({d.total_pages} pages)
+              </option>
+            ))}
+          </select>
+        </div>
         <form className="grid" onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="question">Question</label>
