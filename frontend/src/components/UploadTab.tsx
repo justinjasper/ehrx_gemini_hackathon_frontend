@@ -150,9 +150,6 @@ const UploadTab = ({
                           <td>
                             <div className="sample-name">
                               <strong>{sample.display_name}</strong>
-                              <div className="muted">
-                                {sample.filename}
-                              </div>
                             </div>
                           </td>
                           <td>{formatBytes(sample.size_bytes)}</td>
