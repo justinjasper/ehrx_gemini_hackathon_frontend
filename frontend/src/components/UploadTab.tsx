@@ -117,7 +117,7 @@ const UploadTab = ({
           <div className="section-title">
             <div>
               <h3>Sample Medical Records</h3>
-              <p>Select a PDF record to structure and extract data insights</p>
+              <p>Select a PDF medical record to structure and extract data insights</p>
             </div>
           </div>
 
