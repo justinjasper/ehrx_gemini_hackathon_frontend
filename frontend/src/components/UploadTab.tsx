@@ -120,29 +120,6 @@ const UploadTab = ({
               <h3>Bundled Sample Documents</h3>
               <p>Select a PDF to run through the pipeline instantly.</p>
             </div>
-            <div className="sample-inputs">
-              <div className="form-group">
-                <label htmlFor="samplePageRange">Page Range</label>
-                <input
-                  id="samplePageRange"
-                  value={samplePageRange}
-                  onChange={(event) => setSamplePageRange(event.target.value)}
-                  placeholder='Example: "all" or "1-10"'
-                  disabled={processingSampleId !== null}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="sampleDocumentType">Document Type</label>
-                <input
-                  id="sampleDocumentType"
-                  value={sampleDocumentType}
-                  onChange={(event) =>
-                    setSampleDocumentType(event.target.value)
-                  }
-                  disabled={processingSampleId !== null}
-                />
-              </div>
-            </div>
           </div>
 
           {samplesLoading && <p>Loading sample documents…</p>}
