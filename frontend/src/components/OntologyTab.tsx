@@ -29,7 +29,7 @@ const OntologyTab = ({
       <div className="section-title">
         <div>
           <h2>Ontology Viewer</h2>
-          <p>Select a processed document to inspect its structure.</p>
+          <p>Select a processed document to inspect its structured data.</p>
         </div>
         <button className="btn btn--secondary" onClick={onRefresh}>
           Refresh List

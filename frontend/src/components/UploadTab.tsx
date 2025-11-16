@@ -45,9 +45,8 @@ const UploadTab = ({
 }: UploadTabProps) => {
   const [mode, setMode] = useState<UploadMode>("upload");
   const [file, setFile] = useState<File | null>(null);
-  const [uploadPageRange, setUploadPageRange] = useState("all");
   const [uploadDocumentType, setUploadDocumentType] =
-    useState("Clinical EHR");
+    useState("Medical Report");
   const [samplePageRange, setSamplePageRange] = useState("all");
   const [sampleDocumentType, setSampleDocumentType] =
     useState("Clinical EHR");
@@ -58,7 +57,7 @@ const UploadTab = ({
   const handleUploadSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!file) return;
-    onUpload(file, uploadPageRange, uploadDocumentType);
+    onUpload(file, "all", uploadDocumentType);
   };
 
   const handleProcessSample = async (filename: string) => {
@@ -149,7 +148,7 @@ const UploadTab = ({
                         <tr key={sample.id}>
                           <td>
                             <div className="sample-name">
-                              <strong>{sample.display_name}</strong>
+                              {sample.display_name}
                             </div>
                           </td>
                           <td>{formatBytes(sample.size_bytes)}</td>
@@ -224,26 +223,24 @@ const UploadTab = ({
         <small>Maximum size ~32 MB (Cloud Run request limit).</small>
       </div>
 
-      <div className="grid grid--two-columns">
-        <div className="form-group">
-          <label htmlFor="pageRange">Page Range</label>
-          <input
-            id="pageRange"
-                value={uploadPageRange}
-                onChange={(event) => setUploadPageRange(event.target.value)}
-            placeholder='Example: "all" or "1-10"'
-            disabled={uploading}
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="documentType">Document Type</label>
-          <input
-            id="documentType"
-                value={uploadDocumentType}
-                onChange={(event) => setUploadDocumentType(event.target.value)}
-            disabled={uploading}
-          />
-        </div>
+      <div className="form-group">
+        <label htmlFor="documentType">Document Type</label>
+        <select
+          id="documentType"
+          value={uploadDocumentType}
+          onChange={(event) => setUploadDocumentType(event.target.value)}
+          disabled={uploading}
+        >
+          <option value="Medical Report">Medical Report</option>
+          <option value="Appointment Note">Appointment Note</option>
+          <option value="Progress Note">Progress Note</option>
+          <option value="Discharge Summary">Discharge Summary</option>
+          <option value="Lab Results">Lab Results</option>
+          <option value="Physician Referral">Physician Referral</option>
+          <option value="Imaging Report">Imaging Report</option>
+          <option value="Consent Form">Consent Form</option>
+          <option value="Immunization Record">Immunization Record</option>
+        </select>
       </div>
 
       <button
