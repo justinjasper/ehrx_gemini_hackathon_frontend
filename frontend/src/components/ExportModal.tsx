@@ -97,7 +97,13 @@ const ExportModal = ({
                       onChange={() => setDestination(opt.value)}
                     />
                     {opt.logo ? (
-                      <div className="export-logo-box">
+                      <div 
+                        className="export-logo-box"
+                        style={{
+                          width: opt.value === "epic" ? "60px" : "80px",
+                          height: opt.value === "epic" ? "42px" : "56px"
+                        }}
+                      >
                         <img
                           src={opt.logo}
                           alt={opt.label}
@@ -114,13 +120,8 @@ const ExportModal = ({
                         />
                       </div>
                     ) : (
-                      <div className="export-logo-box">
-                        <div className="export-logo fallback">{opt.label[0]}</div>
-                      </div>
-                    )}
-                    {opt.value === "other" ? (
                       <span className="export-label">{opt.label}</span>
-                    ) : null}
+                    )}
                   </label>
                 ))}
               </div>

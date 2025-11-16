@@ -43,7 +43,7 @@ const UploadTab = ({
   samplesError,
   uploadMessage
 }: UploadTabProps) => {
-  const [mode, setMode] = useState<UploadMode>("sample");
+  const [mode, setMode] = useState<UploadMode>("upload");
   const [file, setFile] = useState<File | null>(null);
   const [uploadPageRange, setUploadPageRange] = useState("all");
   const [uploadDocumentType, setUploadDocumentType] =
