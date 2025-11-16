@@ -86,19 +86,17 @@ export async function processSampleDocument(
     filename?: string;
   }
 > {
+  const formData = new FormData();
+  formData.append("page_range", pageRange);
+  formData.append("document_type", documentType);
+
   const response = await fetch(
     withBase(
       `/sample-documents/${encodeURIComponent(filename)}/process`
     ),
     {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        page_range: pageRange,
-        document_type: documentType
-      })
+      body: formData
     }
   );
 
