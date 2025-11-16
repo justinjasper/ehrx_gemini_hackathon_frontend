@@ -1,5 +1,7 @@
 import JSONTree from "./JSONTree";
 import { DocumentSummary, OntologyDocument } from "../types";
+import { useState } from "react";
+import ExportModal from "./ExportModal";
 
 interface OntologyTabProps {
   documents: DocumentSummary[];
@@ -18,6 +20,10 @@ const OntologyTab = ({
   loading,
   onRefresh
 }: OntologyTabProps) => {
+  const [exportOpen, setExportOpen] = useState(false);
+  const suggestedName =
+    ontology?.document_id ? `${ontology.document_id}.json` : "ontology.json";
+
   return (
     <div className="grid">
       <div className="section-title">
@@ -74,6 +80,12 @@ const OntologyTab = ({
           <div className="json-tree" style={{ gridColumn: "1 / -1" }}>
             <JSONTree data={ontology} />
           </div>
+
+          <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "flex-end" }}>
+            <button className="btn" onClick={() => setExportOpen(true)}>
+              Export to EHR
+            </button>
+          </div>
         </div>
       )}
 
@@ -82,6 +94,16 @@ const OntologyTab = ({
           No ontology loaded. Upload a PDF or select a document above.
         </div>
       )}
+
+      <ExportModal
+        isOpen={exportOpen}
+        onClose={() => setExportOpen(false)}
+        suggestedName={suggestedName}
+        onExport={() => {
+          // Placeholder: Implement real export integration later.
+          setExportOpen(false);
+        }}
+      />
     </div>
   );
 };
