@@ -135,61 +135,68 @@ const UploadTab = ({
           )}
 
           {!samplesLoading && samples.length > 0 && (
-            <div className="table-wrapper">
-              <table className="sample-table">
-                <thead>
-                  <tr>
-                    <th>Document</th>
-                    <th>Size</th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {samples.map((sample) => {
-                    const isProcessing =
-                      processingSampleId === sample.filename;
-                    return (
-                      <tr key={sample.id}>
-                        <td>
-                          <div className="sample-name">
-                            <strong>{sample.display_name}</strong>
-                            <div className="muted">
-                              {sample.filename}
+            <>
+              <div className="table-wrapper">
+                <table className="sample-table">
+                  <thead>
+                    <tr>
+                      <th>Document</th>
+                      <th>Size</th>
+                      <th />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {samples.map((sample) => {
+                      const isProcessing =
+                        processingSampleId === sample.filename;
+                      return (
+                        <tr key={sample.id}>
+                          <td>
+                            <div className="sample-name">
+                              <strong>{sample.display_name}</strong>
+                              <div className="muted">
+                                {sample.filename}
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td>{formatBytes(sample.size_bytes)}</td>
-                        <td>
-                          <div className="sample-actions">
-                            <button
-                              type="button"
-                              className="btn btn--secondary"
-                              onClick={() =>
-                                alert("Preview not implemented yet.")
-                              }
-                            >
-                              Preview
-                            </button>
-                            <button
-                              type="button"
-                              className="btn"
-                              onClick={() =>
-                                handleProcessSample(sample.filename)
-                              }
-                              disabled={isProcessing}
-                            >
-                              {isProcessing
-                                ? "Processing…"
-                                : "Process"}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                          </td>
+                          <td>{formatBytes(sample.size_bytes)}</td>
+                          <td>
+                            <div className="sample-actions">
+                              <button
+                                type="button"
+                                className="btn btn--secondary"
+                                onClick={() =>
+                                  alert("Preview not implemented yet.")
+                                }
+                              >
+                                Preview
+                              </button>
+                              <button
+                                type="button"
+                                className="btn"
+                                onClick={() =>
+                                  handleProcessSample(sample.filename)
+                                }
+                                disabled={isProcessing}
+                              >
+                                {isProcessing
+                                  ? "Processing…"
+                                  : "Process"}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              {processingSampleId !== null && (
+                <p className="muted small-note">
+                  Note: Processing will take ~5 minutes.
+                </p>
+              )}
+            </>
           )}
         </div>
       )}
