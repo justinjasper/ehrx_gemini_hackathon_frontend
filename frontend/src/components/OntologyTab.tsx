@@ -10,6 +10,7 @@ interface OntologyTabProps {
   ontology: OntologyDocument | null;
   loading: boolean;
   onRefresh: () => void;
+  onNavigateToQuery: () => void;
 }
 
 // Recursively process data to combine consecutive list_items
@@ -70,7 +71,8 @@ const OntologyTab = ({
   onSelectDocument,
   ontology,
   loading,
-  onRefresh
+  onRefresh,
+  onNavigateToQuery
 }: OntologyTabProps) => {
   const [exportOpen, setExportOpen] = useState(false);
   const suggestedName =
@@ -90,9 +92,14 @@ const OntologyTab = ({
           <p>Select a processed document to inspect its structured data.</p>
         </div>
         {ontology && (
-          <button className="btn" onClick={() => setExportOpen(true)}>
-            Export to EHR
-          </button>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <button className="btn btn--secondary" onClick={onNavigateToQuery}>
+              Query the Document
+            </button>
+            <button className="btn" onClick={() => setExportOpen(true)}>
+              Export to EHR
+            </button>
+          </div>
         )}
       </div>
 

@@ -332,6 +332,7 @@ function App() {
             ontology={ontology}
             loading={loadingOntology}
             onRefresh={loadDocuments}
+            onNavigateToQuery={() => setActiveTab("query")}
           />
         )}
 
