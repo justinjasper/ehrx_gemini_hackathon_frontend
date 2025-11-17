@@ -186,22 +186,6 @@ const QueryTab = ({
             <h3>Answer Summary</h3>
             <p>{queryResult.answer_summary || "No summary provided."}</p>
           </div>
-          <div className="card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div>
-              <strong>Matches:</strong> {sortedMatches.length}
-              {currentIndex >= 0 && sortedMatches.length > 0
-                ? ` (showing ${currentIndex + 1} of ${sortedMatches.length})`
-                : ""}
-            </div>
-            <div style={{ display: "flex", gap: "0.5rem" }}>
-              <button type="button" className="btn btn--secondary" onClick={gotoPrev} disabled={!sortedMatches.length}>
-                ← Prev
-              </button>
-              <button type="button" className="btn" onClick={gotoNext} disabled={!sortedMatches.length}>
-                Next →
-              </button>
-            </div>
-          </div>
 
           {queryResult.reasoning && (
             <div className="card">
@@ -223,6 +207,23 @@ const QueryTab = ({
               }
             }}
           />
+
+          <div className="card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div>
+              <strong>Matches:</strong> {sortedMatches.length}
+              {currentIndex >= 0 && sortedMatches.length > 0
+                ? ` (showing ${currentIndex + 1} of ${sortedMatches.length})`
+                : ""}
+            </div>
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <button type="button" className="btn btn--secondary" onClick={gotoPrev} disabled={!sortedMatches.length}>
+                ← Prev
+              </button>
+              <button type="button" className="btn" onClick={gotoNext} disabled={!sortedMatches.length}>
+                Next →
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
