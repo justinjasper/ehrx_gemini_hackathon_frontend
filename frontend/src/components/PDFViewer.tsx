@@ -15,6 +15,10 @@ interface PDFViewerProps {
   highlightedElementId: string | null;
   onHighlightChange: (elementId: string, pageNumber: number) => void;
   pageInfoMap: Map<number, { width_px?: number; height_px?: number }>;
+  sortedMatches: MatchedElement[];
+  currentIndex: number;
+  onNavigatePrev: () => void;
+  onNavigateNext: () => void;
 }
 
 const PDFViewer = ({
@@ -22,12 +26,17 @@ const PDFViewer = ({
   matchedElements,
   highlightedElementId,
   onHighlightChange,
-  pageInfoMap
+  pageInfoMap,
+  sortedMatches,
+  currentIndex,
+  onNavigatePrev,
+  onNavigateNext
 }: PDFViewerProps) => {
   const [doc, setDoc] = useState<PDFDocumentProxy | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+  const [originalPageSize, setOriginalPageSize] = useState({ width: 0, height: 0 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -55,6 +64,11 @@ const PDFViewer = ({
 
     const renderPage = async () => {
       const page = await doc.getPage(currentPage);
+      // Get original page size (scale 1.0) for coordinate transformation
+      const originalViewport = page.getViewport({ scale: 1.0 });
+      setOriginalPageSize({ width: originalViewport.width, height: originalViewport.height });
+      
+      // Render at scale 1.5
       const viewport = page.getViewport({ scale: 1.5 });
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -131,23 +145,75 @@ const PDFViewer = ({
         </div>
       </div>
 
-      <div className="pdf-canvas-wrapper">
+      <div className="pdf-canvas-wrapper" style={{ position: "relative" }}>
         <canvas ref={canvasRef} />
+        {sortedMatches.length > 0 && (
+          <div
+            style={{
+              position: "absolute",
+              top: "10px",
+              right: "10px",
+              background: "rgba(255, 255, 255, 0.95)",
+              padding: "0.5rem",
+              borderRadius: "4px",
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              zIndex: 10
+            }}
+          >
+            <span style={{ fontSize: "0.875rem", color: "#64748b" }}>
+              {currentIndex >= 0
+                ? `${currentIndex + 1} / ${sortedMatches.length}`
+                : `0 / ${sortedMatches.length}`}
+            </span>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              onClick={onNavigatePrev}
+              disabled={sortedMatches.length === 0}
+              style={{ padding: "0.25rem 0.5rem", fontSize: "0.875rem" }}
+            >
+              ← Prev
+            </button>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              onClick={onNavigateNext}
+              disabled={sortedMatches.length === 0}
+              style={{ padding: "0.25rem 0.5rem", fontSize: "0.875rem" }}
+            >
+              Next →
+            </button>
+          </div>
+        )}
         {pageMatches.map((element) => {
-          if (!element.bbox_pixel || !pageInfo?.height_px) return null;
+          if (!element.bbox_pixel || originalPageSize.height === 0) return null;
           const [x0, y0, x1, y1] = element.bbox_pixel;
           
-          // Convert from PDF coordinates (bottom-left origin) to screen coordinates (top-left origin)
-          // PDF: y increases upward, screen: y increases downward
-          const pdfPageHeight = pageInfo.height_px;
-          const y0_screen = pdfPageHeight - y1; // Flip: top of PDF box becomes top of screen box
-          const y1_screen = pdfPageHeight - y0; // Flip: bottom of PDF box becomes bottom of screen box
+          // bbox_pixel is in pixel coordinates of the original PDF page (scale 1.0)
+          // PDF coordinate system: origin at bottom-left, Y increases upward
+          // Screen coordinate system: origin at top-left, Y increases downward
+          // We need to flip Y coordinates using the original page height
           
+          const originalHeight = originalPageSize.height;
+          
+          // Convert from PDF coords to screen coords
+          // In PDF: y0 is bottom (smaller), y1 is top (larger)
+          // In screen: we want y0 at top, y1 at bottom
+          const y_top_screen = originalHeight - y1;    // Top edge in screen coords
+          const y_bottom_screen = originalHeight - y0; // Bottom edge in screen coords
+          
+          // Now scale to match the rendered canvas (which is at scale 1.5)
+          const scale = 1.5; // Match the rendering scale
           const style = {
-            left: x0 * scaleX,
-            top: y0_screen * scaleY,
-            width: (x1 - x0) * scaleX,
-            height: (y1_screen - y0_screen) * scaleY
+            position: "absolute" as const,
+            left: `${x0 * scale}px`,
+            top: `${y_top_screen * scale}px`,
+            width: `${(x1 - x0) * scale}px`,
+            height: `${(y_bottom_screen - y_top_screen) * scale}px`,
+            pointerEvents: "auto" as const
           };
           const highlight = highlightedElementId === element.element_id;
           return (

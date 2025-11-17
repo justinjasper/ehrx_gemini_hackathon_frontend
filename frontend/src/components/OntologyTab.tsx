@@ -89,9 +89,11 @@ const OntologyTab = ({
           <h2>Ontology Viewer</h2>
           <p>Select a processed document to inspect its structured data.</p>
         </div>
-        <button className="btn btn--secondary" onClick={onRefresh}>
-          Refresh List
-        </button>
+        {ontology && (
+          <button className="btn" onClick={() => setExportOpen(true)}>
+            Export to EHR
+          </button>
+        )}
       </div>
 
       <div className="form-group">
@@ -137,12 +139,6 @@ const OntologyTab = ({
 
           <div className="json-tree" style={{ gridColumn: "1 / -1" }}>
             <JSONTree data={processedOntology} />
-          </div>
-
-          <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "flex-end" }}>
-            <button className="btn" onClick={() => setExportOpen(true)}>
-              Export to EHR
-            </button>
           </div>
         </div>
       )}

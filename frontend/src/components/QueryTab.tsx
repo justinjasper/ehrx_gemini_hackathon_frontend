@@ -225,23 +225,6 @@ const QueryTab = ({
               }
             }}
           />
-
-          <div className="card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div>
-              <strong>Matches:</strong> {sortedMatches.length}
-              {currentIndex >= 0 && sortedMatches.length > 0
-                ? ` (showing ${currentIndex + 1} of ${sortedMatches.length})`
-                : ""}
-            </div>
-            <div style={{ display: "flex", gap: "0.5rem" }}>
-              <button type="button" className="btn btn--secondary" onClick={gotoPrev} disabled={!sortedMatches.length}>
-                ← Prev
-              </button>
-              <button type="button" className="btn" onClick={gotoNext} disabled={!sortedMatches.length}>
-                Next →
-              </button>
-            </div>
-          </div>
         </div>
       )}
 
@@ -253,6 +236,10 @@ const QueryTab = ({
             highlightedElementId={highlightedElementId}
             onHighlightChange={(elementId) => setHighlightedElementId(elementId)}
             pageInfoMap={pageInfoMap}
+            sortedMatches={sortedMatches}
+            currentIndex={currentIndex}
+            onNavigatePrev={gotoPrev}
+            onNavigateNext={gotoNext}
           />
         </div>
       ) : (
