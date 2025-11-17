@@ -20,7 +20,6 @@ const MatchedElementsList = ({
       <table className="matched-table">
         <thead>
           <tr>
-            <th>ID</th>
             <th>Type</th>
             <th>Page</th>
             <th>Snippet</th>
@@ -30,7 +29,6 @@ const MatchedElementsList = ({
         <tbody>
           {elements.map((element) => (
             <tr key={element.element_id}>
-              <td>{element.element_id}</td>
               <td>{element.type}</td>
               <td>{element.page_number}</td>
               <td>
