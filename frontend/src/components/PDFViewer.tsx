@@ -189,34 +189,32 @@ const PDFViewer = ({
           </div>
         )}
         {pageMatches.map((element) => {
-          if (!element.bbox_pixel || !pageInfo?.height_px || originalPageSize.height === 0) return null;
+          if (!element.bbox_pixel || !pageInfo?.width_px || !pageInfo?.height_px) return null;
           const [x0, y0, x1, y1] = element.bbox_pixel;
           
-          // bbox_pixel format: [x_min, y_min, x_max, y_max] 
-          // Assuming these are in PDF coordinates (bottom-left origin, Y increases upward)
-          // We need to convert to screen coordinates (top-left origin, Y increases downward)
-          
-          // Use pageInfo.height_px as the reference since bbox_pixel is relative to this
-          const refHeight = pageInfo.height_px;
-          
-          // Convert Y coordinates from PDF (bottom-left) to screen (top-left)
-          // In PDF: y0 (y_min) is bottom, y1 (y_max) is top
-          // After flip: top_screen = refHeight - y1, bottom_screen = refHeight - y0
-          const y_top_screen = refHeight - y1;
-          const y_bottom_screen = refHeight - y0;
-          
-          // Calculate the actual top and bottom (ensure correct order)
-          const actual_top = Math.min(y_top_screen, y_bottom_screen);
-          const actual_bottom = Math.max(y_top_screen, y_bottom_screen);
+          // bbox_pixel coordinate system (from backend documentation):
+          // - Origin: Top-left corner (0, 0)
+          // - Y-axis: Increases downward (standard image coordinates)
+          // - Format: [x0, y0, x1, y1]
+          //   - x0 = Left edge (pixels from left)
+          //   - y0 = Top edge (pixels from top)
+          //   - x1 = Right edge (pixels from left)
+          //   - y1 = Bottom edge (pixels from top)
+          // - Units: Pixels relative to rasterized image at 200 DPI
+          // - Reference dimensions: pageInfo.width_px × pageInfo.height_px
+          //
+          // Since bbox_pixel is already in top-left origin coordinates (Y increases downward),
+          // we can use the coordinates directly without any Y-flip transformation.
+          // We just need to scale from pageInfo dimensions to the rendered canvas dimensions.
           
           // Scale coordinates to match the rendered canvas
-          // The canvas is rendered at 1.5x scale, so we need to scale from pageInfo dimensions
+          // scaleX and scaleY convert from pageInfo dimensions to canvas dimensions
           const style = {
             position: "absolute" as const,
             left: `${x0 * scaleX}px`,
-            top: `${actual_top * scaleY}px`,
+            top: `${y0 * scaleY}px`,
             width: `${(x1 - x0) * scaleX}px`,
-            height: `${(actual_bottom - actual_top) * scaleY}px`,
+            height: `${(y1 - y0) * scaleY}px`,
             pointerEvents: "auto" as const
           };
           const highlight = highlightedElementId === element.element_id;
