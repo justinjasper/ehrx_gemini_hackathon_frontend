@@ -139,13 +139,13 @@ function App() {
 
     let cancelled = false;
 
-    const loadOntologyInner = async (retries = 10, delayMs = 2000) => {
+    const loadOntologyInner = async (initialDelayMs = 2000, maxDelayMs = 30000) => {
       setLoadingOntology(true);
       setError(null);
       
-      for (let attempt = 0; attempt < retries; attempt++) {
-        if (cancelled) return;
-        
+      let attempt = 0;
+      
+      while (!cancelled) {
         try {
           const data = await fetchOntology(selectedDocument);
           if (cancelled) return;
@@ -155,20 +155,24 @@ function App() {
         } catch (err: any) {
           if (cancelled) return;
           
-          // If it's a 404, the document is still processing - retry
+          // If it's a 404, the document is still processing - retry indefinitely
           const is404 = (err as any)?.status === 404 ||
                        err?.message?.includes("404") || 
                        err?.message?.includes("not found") ||
                        (err?.message?.toLowerCase().includes("document") && err?.message?.toLowerCase().includes("not found"));
           
-          if (is404 && attempt < retries - 1) {
-            // Wait before retrying, with exponential backoff
-            const waitTime = delayMs * Math.pow(1.5, attempt);
+          if (is404) {
+            // Wait before retrying, with exponential backoff (capped at maxDelayMs)
+            const waitTime = Math.min(
+              initialDelayMs * Math.pow(1.5, attempt),
+              maxDelayMs
+            );
             await new Promise(resolve => setTimeout(resolve, waitTime));
+            attempt++;
             continue;
           }
           
-          // If not a 404, or we've exhausted retries, show error
+          // If not a 404, show error and stop retrying
           console.error(err);
           if (!cancelled) {
             setError("Failed to load ontology.");
@@ -177,11 +181,6 @@ function App() {
           }
           return;
         }
-      }
-      
-      if (!cancelled) {
-        setError("Ontology is still processing. Please wait...");
-        setLoadingOntology(false);
       }
     };
 
