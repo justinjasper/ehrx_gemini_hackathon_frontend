@@ -104,7 +104,7 @@ const UploadTab = ({
             checked={mode === "sample"}
             onChange={() => setMode("sample")}
           />
-          Use Sample Doc
+          Upload Sample Document
         </label>
       </div>
 
