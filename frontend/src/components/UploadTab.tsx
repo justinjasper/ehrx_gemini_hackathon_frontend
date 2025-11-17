@@ -223,13 +223,13 @@ const UploadTab = ({
         <small>Maximum size ~32 MB (Cloud Run request limit).</small>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="documentType">Document Type</label>
+        <div className="form-group">
+          <label htmlFor="documentType">Document Type</label>
         <select
-          id="documentType"
+            id="documentType"
           value={uploadDocumentType}
           onChange={(event) => setUploadDocumentType(event.target.value)}
-          disabled={uploading}
+            disabled={uploading}
         >
           <option value="Medical Report">Medical Report</option>
           <option value="Appointment Note">Appointment Note</option>
