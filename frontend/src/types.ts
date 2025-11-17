@@ -78,3 +78,32 @@ export interface SampleDocumentsResponse {
   samples: SampleDocument[];
 }
 
+export interface PrecomputedAnswer {
+  document_id: string;
+  source_json: string;
+  total_questions: number;
+  questions: PrecomputedQuestion[];
+}
+
+export interface PrecomputedQuestion {
+  question_id: string;
+  question: string;
+  answer: {
+    answer_summary: string;
+    reasoning: string;
+    matched_elements: MatchedElement[];
+  };
+}
+
+export interface PrecomputedAnswersListResponse {
+  status: string;
+  total_documents: number;
+  documents: Array<{
+    document_id: string;
+    filename: string;
+    total_questions: number;
+    source_json: string;
+    answers_url: string;
+  }>;
+}
+

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MatchedElement, QueryResponse } from "../types";
+import { MatchedElement, PrecomputedAnswer, QueryResponse } from "../types";
 import MatchedElementsList from "./MatchedElementsList";
 import PDFViewer from "./PDFViewer";
 
@@ -13,6 +13,8 @@ interface QueryTabProps {
   ontologyAvailable: boolean;
   documents: { document_id: string; total_pages: number }[];
   onSelectDocument: (id: string) => void;
+  precomputedAnswers: PrecomputedAnswer | null;
+  isPrecomputedAnswer: boolean;
 }
 
 const QueryTab = ({
@@ -24,12 +26,19 @@ const QueryTab = ({
   pageInfoMap,
   ontologyAvailable,
   documents,
-  onSelectDocument
+  onSelectDocument,
+  precomputedAnswers,
+  isPrecomputedAnswer
 }: QueryTabProps) => {
   const [question, setQuestion] = useState("");
   const [highlightedElementId, setHighlightedElementId] = useState<
     string | null
   >(null);
+
+  const handleSuggestedQuestionClick = (suggestedQuestion: string) => {
+    setQuestion(suggestedQuestion);
+    onSubmit(suggestedQuestion);
+  };
 
   const sortedMatches: MatchedElement[] = (queryResult?.matched_elements ?? [])
     .slice()
@@ -115,6 +124,49 @@ const QueryTab = ({
           </button>
         </form>
       </div>
+
+      {precomputedAnswers && precomputedAnswers.questions.length > 0 && (
+        <div className="card">
+          <h3>Suggested Questions</h3>
+          <p className="muted" style={{ marginBottom: "1rem" }}>
+            Click on a question below to use it instantly (precomputed answers):
+          </p>
+          <div className="suggested-questions">
+            {precomputedAnswers.questions.map((q) => (
+              <button
+                key={q.question_id}
+                type="button"
+                className="btn btn--secondary suggested-question-btn"
+                onClick={() => handleSuggestedQuestionClick(q.question)}
+                disabled={loading || !documentId}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  textAlign: "left",
+                  marginBottom: "0.5rem",
+                  padding: "0.75rem",
+                  whiteSpace: "normal",
+                  wordWrap: "break-word"
+                }}
+              >
+                {q.question}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {isPrecomputedAnswer && queryResult && (
+        <div className="card" style={{ background: "#f0f9ff", border: "1px solid #0ea5e9" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <span style={{ fontSize: "1.2rem" }}>✓</span>
+            <strong>Using Precomputed Answer</strong>
+          </div>
+          <p className="muted" style={{ marginTop: "0.5rem", marginBottom: 0 }}>
+            This answer was retrieved instantly from precomputed results.
+          </p>
+        </div>
+      )}
 
       {!documentId && (
         <div className="card">

@@ -4,6 +4,7 @@ import {
   DocumentSummary,
   MatchedElement,
   OntologyDocument,
+  PrecomputedAnswer,
   QueryResponse,
   SampleDocument
 } from "./types";
@@ -12,6 +13,8 @@ import {
   fetchOntology,
   fetchSampleDocuments,
   fetchSamplePdf,
+  getPrecomputedAnswers,
+  listPrecomputedAnswers,
   processSampleDocument,
   queryDocument,
   uploadDocument
@@ -42,6 +45,9 @@ function App() {
   );
   const samplesFetchedRef = useRef(false);
   const [processedDocumentIds, setProcessedDocumentIds] = useState<string[]>([]);
+  const [precomputedAnswers, setPrecomputedAnswers] = useState<Map<string, PrecomputedAnswer>>(new Map());
+  const [availablePrecomputedDocs, setAvailablePrecomputedDocs] = useState<string[]>([]);
+  const [isPrecomputedAnswer, setIsPrecomputedAnswer] = useState(false);
 
   const loadDocuments = async () => {
     try {
@@ -77,6 +83,39 @@ function App() {
 
     loadSamples();
   }, []);
+
+  // Load precomputed answers list on mount
+  useEffect(() => {
+    const loadPrecomputedList = async () => {
+      try {
+        const result = await listPrecomputedAnswers();
+        const docIds = result.documents.map((doc) => doc.document_id);
+        setAvailablePrecomputedDocs(docIds);
+      } catch (err) {
+        console.error("Failed to load precomputed answers list:", err);
+      }
+    };
+    loadPrecomputedList();
+  }, []);
+
+  // Load precomputed answers when document is selected
+  useEffect(() => {
+    if (selectedDocument && availablePrecomputedDocs.includes(selectedDocument)) {
+      const loadPrecomputed = async () => {
+        try {
+          const answers = await getPrecomputedAnswers(selectedDocument);
+          setPrecomputedAnswers((prev) => {
+            const next = new Map(prev);
+            next.set(selectedDocument, answers);
+            return next;
+          });
+        } catch (err) {
+          console.error("Failed to load precomputed answers:", err);
+        }
+      };
+      loadPrecomputed();
+    }
+  }, [selectedDocument, availablePrecomputedDocs]);
 
   useEffect(() => {
     if (!selectedDocument) {
@@ -176,14 +215,42 @@ function App() {
     if (!selectedDocument) return;
     setQueryLoading(true);
     setError(null);
+    setIsPrecomputedAnswer(false);
+
     try {
+      // Check if we have precomputed answers for this document
+      const precomputed = precomputedAnswers.get(selectedDocument);
+      if (precomputed) {
+        // Find matching question in precomputed answers (case-insensitive, trimmed)
+        const matchingQuestion = precomputed.questions.find(
+          (q) => q.question.toLowerCase().trim() === question.toLowerCase().trim()
+        );
+
+        if (matchingQuestion) {
+          // Use precomputed answer
+          setIsPrecomputedAnswer(true);
+          setQueryResult({
+            answer_summary: matchingQuestion.answer.answer_summary,
+            reasoning: matchingQuestion.answer.reasoning,
+            matched_elements: matchingQuestion.answer.matched_elements,
+            filter_stats: {}
+          });
+          setActiveTab("query");
+          setQueryLoading(false);
+          return;
+        }
+      }
+
+      // Fall back to live query if no precomputed answer found
       const response = await queryDocument(selectedDocument, question);
+      setIsPrecomputedAnswer(false);
       setQueryResult(response);
       setActiveTab("query");
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Query failed.");
       setQueryResult(null);
+      setIsPrecomputedAnswer(false);
     } finally {
       setQueryLoading(false);
     }
@@ -265,6 +332,8 @@ function App() {
             ontologyAvailable={!!ontology}
             documents={processedDocuments}
             onSelectDocument={(id) => setSelectedDocument(id)}
+            precomputedAnswers={precomputedAnswers.get(selectedDocument) || null}
+            isPrecomputedAnswer={isPrecomputedAnswer}
           />
         )}
       </section>

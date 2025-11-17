@@ -1,6 +1,8 @@
 import {
   DocumentSummary,
   OntologyDocument,
+  PrecomputedAnswer,
+  PrecomputedAnswersListResponse,
   QueryResponse,
   SampleDocumentsResponse,
   UploadResponse
@@ -112,5 +114,29 @@ export async function fetchSamplePdf(filename: string): Promise<File> {
   }
   const blob = await response.blob();
   return new File([blob], filename, { type: "application/pdf" });
+}
+
+export async function listPrecomputedAnswers(): Promise<PrecomputedAnswersListResponse> {
+  const response = await fetch(withBase("/precomputed-answers"));
+  return handleResponse<PrecomputedAnswersListResponse>(response);
+}
+
+export async function getPrecomputedAnswers(
+  documentId: string
+): Promise<PrecomputedAnswer> {
+  const response = await fetch(
+    withBase(`/precomputed-answers/${encodeURIComponent(documentId)}`)
+  );
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error(
+        `Precomputed answers not found for document: ${documentId}`
+      );
+    }
+    throw new Error(
+      `Failed to get precomputed answers: ${response.statusText}`
+    );
+  }
+  return handleResponse<PrecomputedAnswer>(response);
 }
 
