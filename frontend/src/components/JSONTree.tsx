@@ -8,6 +8,16 @@ interface JSONTreeProps {
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
+const FIELDS_TO_EXCLUDE = new Set([
+  "page_info",
+  "processing_metadata",
+  "confidence",
+  "bbox_pixel",
+  "bbox_pdf",
+  "clinical_metadata",
+  "processing_stats"
+]);
+
 const JSONTree = ({ data, label = "root" }: JSONTreeProps) => {
   const [open, setOpen] = useState(true);
 
@@ -20,9 +30,16 @@ const JSONTree = ({ data, label = "root" }: JSONTreeProps) => {
     );
   }
 
-  const entries = Array.isArray(data)
-    ? data.map((item, index) => [index, item])
-    : Object.entries(data);
+  let entries: [string | number, unknown][];
+  
+  if (Array.isArray(data)) {
+    entries = data.map((item, index) => [index, item]);
+  } else {
+    // Filter out excluded fields
+    entries = Object.entries(data).filter(
+      ([key]) => !FIELDS_TO_EXCLUDE.has(key)
+    );
+  }
 
   return (
     <div className="json-node">
