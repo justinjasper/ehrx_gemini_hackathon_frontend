@@ -16,7 +16,8 @@ const FIELDS_TO_EXCLUDE = new Set([
   "bbox_pdf",
   "clinical_metadata",
   "processing_stats",
-  "needs_review"
+  "needs_review",
+  "element_id"
 ]);
 
 const JSONTree = ({ data, label = "root" }: JSONTreeProps) => {
