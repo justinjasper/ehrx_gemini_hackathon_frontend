@@ -134,13 +134,20 @@ const PDFViewer = ({
       <div className="pdf-canvas-wrapper">
         <canvas ref={canvasRef} />
         {pageMatches.map((element) => {
-          if (!element.bbox_pixel) return null;
+          if (!element.bbox_pixel || !pageInfo?.height_px) return null;
           const [x0, y0, x1, y1] = element.bbox_pixel;
+          
+          // Convert from PDF coordinates (bottom-left origin) to screen coordinates (top-left origin)
+          // PDF: y increases upward, screen: y increases downward
+          const pdfPageHeight = pageInfo.height_px;
+          const y0_screen = pdfPageHeight - y1; // Flip: top of PDF box becomes top of screen box
+          const y1_screen = pdfPageHeight - y0; // Flip: bottom of PDF box becomes bottom of screen box
+          
           const style = {
             left: x0 * scaleX,
-            top: y0 * scaleY,
+            top: y0_screen * scaleY,
             width: (x1 - x0) * scaleX,
-            height: (y1 - y0) * scaleY
+            height: (y1_screen - y0_screen) * scaleY
           };
           const highlight = highlightedElementId === element.element_id;
           return (
