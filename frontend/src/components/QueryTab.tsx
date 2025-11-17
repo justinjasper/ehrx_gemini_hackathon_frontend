@@ -92,6 +92,19 @@ const QueryTab = ({
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!question.trim() || !documentId) return;
+    
+    // Check if this is a precomputed question and add delay
+    const isPrecomputedQuestion = precomputedAnswers?.questions.some(
+      (q) => q.question.toLowerCase().trim() === question.toLowerCase().trim()
+    );
+    
+    if (isPrecomputedQuestion) {
+      setIsProcessingSuggested(true);
+      // Wait 4 seconds before submitting
+      await new Promise((resolve) => setTimeout(resolve, 4000));
+      setIsProcessingSuggested(false);
+    }
+    
     await onSubmit(question.trim());
     setHighlightedElementId(null);
   };
@@ -137,7 +150,12 @@ const QueryTab = ({
                 className="btn" 
                 type="submit" 
                 disabled={isProcessing || !question}
-                style={{ padding: "0.5rem 1rem", height: "auto", minHeight: "2.5rem" }}
+                style={{ 
+                  padding: "0.5rem 1rem", 
+                  height: "auto", 
+                  minHeight: "2.5rem",
+                  width: "100%"
+                }}
               >
                 {isProcessing ? "Running Query…" : "Submit Query"}
               </button>
