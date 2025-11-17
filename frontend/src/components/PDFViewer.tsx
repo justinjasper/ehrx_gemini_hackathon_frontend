@@ -188,42 +188,59 @@ const PDFViewer = ({
           // Otherwise fall back to bbox_pixel
           let coords: { left: number; top: number; width: number; height: number } | null = null;
           
-          if (element.bbox_pdf && element.bbox_pdf.length === 4) {
-            // Use bbox_pdf with proper viewport transformation
-            // Get base viewport for PDF dimensions
+          // Prefer bbox_pixel since it's already in screen coordinates (top-left origin)
+          // and just needs scaling to match the viewport
+          if (element.bbox_pixel && element.bbox_pixel.length === 4) {
+            const [x0, y0, x1, y1] = element.bbox_pixel;
+            const pageInfo = pageInfoMap.get(currentPage);
+            
+            if (!pageInfo?.width_px || !pageInfo?.height_px || !currentPageObj) return null;
+            
+            // bbox_pixel is in pixels relative to the rasterized image at 200 DPI
+            // The rasterized image dimensions are in pageInfo.width_px × pageInfo.height_px
+            // We need to scale these coordinates to match the PDF.js viewport dimensions
+            
+            // Calculate scale: from rasterized image (200 DPI) to viewport (rendered at scale 1.5)
+            // Direct ratio: viewport dimensions / pageInfo dimensions
+            const scaleX = viewport.width / pageInfo.width_px;
+            const scaleY = viewport.height / pageInfo.height_px;
+            
+            // Apply scaling - bbox_pixel coordinates are already in top-left origin, no flip needed
+            // Ensure coordinates are within bounds
+            const left = Math.max(0, x0 * scaleX);
+            const top = Math.max(0, y0 * scaleY);
+            const width = Math.max(0, (x1 - x0) * scaleX);
+            const height = Math.max(0, (y1 - y0) * scaleY);
+            
+            coords = {
+              left,
+              top,
+              width,
+              height
+            };
+          } else if (element.bbox_pdf && element.bbox_pdf.length === 4 && currentPageObj) {
+            // Fallback to bbox_pdf: transform from PDF coordinates to viewport coordinates
             const baseViewport = currentPageObj.getViewport({ scale: 1.0 });
-            const pdfHeightPoints = baseViewport.height * (72 / 96);
-            const scale = viewport.scale || 1.5;
             const [x0_pdf, y0_pdf, x1_pdf, y1_pdf] = element.bbox_pdf;
+            const scale = viewport.scale || 1.5;
+            
+            // PDF.js viewport at scale 1.0 gives dimensions in CSS pixels
+            // PDF points to CSS pixels conversion: 1 point = 1/72 inch, 1 CSS pixel = 1/96 inch
+            // So: 1 point = (96/72) CSS pixels = 1.333... CSS pixels
+            const pdfHeightPoints = baseViewport.height * (72 / 96);
+            const pointsToPixels = (96 / 72) * scale;
             
             // Transform coordinates
-            const left = x0_pdf * (96 / 72) * scale;
-            const right = x1_pdf * (96 / 72) * scale;
-            const top = (pdfHeightPoints - y1_pdf) * (96 / 72) * scale;
-            const bottom = (pdfHeightPoints - y0_pdf) * (96 / 72) * scale;
+            const left = x0_pdf * pointsToPixels;
+            const right = x1_pdf * pointsToPixels;
+            const top = (pdfHeightPoints - y1_pdf) * pointsToPixels;  // y1 is top in PDF
+            const bottom = (pdfHeightPoints - y0_pdf) * pointsToPixels; // y0 is bottom in PDF
             
             coords = {
               left,
               top,
               width: right - left,
               height: bottom - top
-            };
-          } else if (element.bbox_pixel && element.bbox_pixel.length === 4) {
-            // Fall back to bbox_pixel: scale from rasterized image to viewport
-            const [x0, y0, x1, y1] = element.bbox_pixel;
-            const pageInfo = pageInfoMap.get(currentPage);
-            
-            if (!pageInfo?.width_px || !pageInfo?.height_px) return null;
-            
-            // Scale from rasterized image dimensions to viewport dimensions
-            const scaleX = viewport.width / pageInfo.width_px;
-            const scaleY = viewport.height / pageInfo.height_px;
-            
-            coords = {
-              left: x0 * scaleX,
-              top: y0 * scaleY,
-              width: (x1 - x0) * scaleX,
-              height: (y1 - y0) * scaleY
             };
           } else {
             return null;
