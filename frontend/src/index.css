@@ -191,6 +191,10 @@ textarea {
   text-align: right;
 }
 
+.small-note--center {
+  text-align: center;
+}
+
 @media (min-width: 960px) {
   .grid--two-columns {
     grid-template-columns: repeat(2, minmax(0, 1fr));
