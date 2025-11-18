@@ -48,6 +48,7 @@ function App() {
   const [precomputedAnswers, setPrecomputedAnswers] = useState<Map<string, PrecomputedAnswer>>(new Map());
   const [availablePrecomputedDocs, setAvailablePrecomputedDocs] = useState<string[]>([]);
   const [isPrecomputedAnswer, setIsPrecomputedAnswer] = useState(false);
+  const [waitingForOntologyAfterUpload, setWaitingForOntologyAfterUpload] = useState(false);
 
   const loadDocuments = useCallback(
     async (options?: { retries?: number; delayMs?: number }) => {
@@ -191,6 +192,15 @@ function App() {
     };
   }, [selectedDocument]);
 
+  // Switch to ontology tab when ontology finishes loading after upload
+  useEffect(() => {
+    // Only switch if we're waiting for ontology after upload and it just finished loading
+    if (waitingForOntologyAfterUpload && !loadingOntology && ontology && selectedDocument) {
+      setActiveTab("ontology");
+      setWaitingForOntologyAfterUpload(false);
+    }
+  }, [loadingOntology, ontology, selectedDocument, waitingForOntologyAfterUpload]);
+
   const handleUpload = async (
     file: File,
     pageRange: string,
@@ -204,13 +214,15 @@ function App() {
       await loadDocuments({ retries: 5, delayMs: 3000 });
       setSelectedDocument(response.document_id);
       setCachedPdfFile(file);
-      setActiveTab("ontology");
+      // Set flag to wait for ontology before switching tabs
+      setWaitingForOntologyAfterUpload(true);
       setQueryResult(null);
     } catch (err: any) {
       console.error(err);
       const message = err?.message || "Upload failed.";
       setUploadMessage(message);
       setError(message);
+      setWaitingForOntologyAfterUpload(false);
     } finally {
       setUploading(false);
     }
