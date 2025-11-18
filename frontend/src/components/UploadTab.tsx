@@ -85,6 +85,8 @@ const UploadTab = ({
     }
   };
 
+  const isProcessingUpload = uploading || processingPending;
+
   return (
     <div className="grid">
       <div className="mode-toggle">
@@ -109,13 +111,6 @@ const UploadTab = ({
           Upload Sample Document
         </label>
       </div>
-
-      {processingPending && (
-        <div className="alert alert--info processing-banner">
-          <span className="processing-banner__spinner" aria-hidden="true" />
-          Processing uploaded document… this may take a few minutes. Please keep this page open.
-        </div>
-      )}
 
       {uploadMessage && (
         <div className="alert alert--error">{uploadMessage}</div>
@@ -217,60 +212,57 @@ const UploadTab = ({
 
       {mode === "upload" && (
         <form className="grid" onSubmit={handleUploadSubmit}>
-      <div className="form-group">
-        <label htmlFor="file">PDF File</label>
-        <input
-          id="file"
-          type="file"
-          accept="application/pdf"
-          onChange={(event) =>
-            setFile(event.target.files ? event.target.files[0] : null)
-          }
-          required
-          disabled={uploading}
-        />
-        <small>Maximum size ~32 MB (Cloud Run request limit).</small>
-      </div>
+          <div className="form-group">
+            <label htmlFor="file">PDF File</label>
+            <input
+              id="file"
+              type="file"
+              accept="application/pdf"
+              onChange={(event) =>
+                setFile(event.target.files ? event.target.files[0] : null)
+              }
+              required
+              disabled={isProcessingUpload}
+            />
+            <small>Maximum size ~32 MB (Cloud Run request limit).</small>
+          </div>
 
-        <div className="form-group">
-          <label htmlFor="documentType">Document Type</label>
-        <select
-            id="documentType"
-          value={uploadDocumentType}
-          onChange={(event) => setUploadDocumentType(event.target.value)}
-            disabled={uploading}
-        >
-          <option value="Medical Report">Medical Report</option>
-          <option value="Appointment Note">Appointment Note</option>
-          <option value="Progress Note">Progress Note</option>
-          <option value="Discharge Summary">Discharge Summary</option>
-          <option value="Lab Results">Lab Results</option>
-          <option value="Physician Referral">Physician Referral</option>
-          <option value="Imaging Report">Imaging Report</option>
-          <option value="Consent Form">Consent Form</option>
-          <option value="Immunization Record">Immunization Record</option>
-        </select>
-      </div>
+          <div className="form-group">
+            <label htmlFor="documentType">Document Type</label>
+            <select
+              id="documentType"
+              value={uploadDocumentType}
+              onChange={(event) => setUploadDocumentType(event.target.value)}
+              disabled={isProcessingUpload}
+            >
+              <option value="Medical Report">Medical Report</option>
+              <option value="Appointment Note">Appointment Note</option>
+              <option value="Progress Note">Progress Note</option>
+              <option value="Discharge Summary">Discharge Summary</option>
+              <option value="Lab Results">Lab Results</option>
+              <option value="Physician Referral">Physician Referral</option>
+              <option value="Imaging Report">Imaging Report</option>
+              <option value="Consent Form">Consent Form</option>
+              <option value="Immunization Record">Immunization Record</option>
+            </select>
+          </div>
 
-              <button
-                className="btn"
-                type="submit"
-                disabled={!file || uploading}
-              >
-                {uploading ? (
-                  <>
-                    Uploading…
-                    <span
-                      className="btn__spinner"
-                      aria-hidden="true"
-                    />
-                  </>
-                ) : (
-                  "Upload & Process"
-                )}
-              </button>
+          <button
+            className="btn"
+            type="submit"
+            disabled={!file || isProcessingUpload}
+          >
+            {isProcessingUpload ? (
+              <>
+                Processing…
+                <span className="btn__spinner" aria-hidden="true" />
+              </>
+            ) : (
+              "Upload & Process"
+            )}
+          </button>
           <p className="muted small-note">
-            Note: Uploads will take ~5 minutes.
+            Processing uploaded document… this may take a few minutes. Please keep this page open.
           </p>
 
       {!file && (
