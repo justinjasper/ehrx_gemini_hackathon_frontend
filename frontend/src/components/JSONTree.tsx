@@ -18,7 +18,8 @@ const FIELDS_TO_EXCLUDE = new Set([
   "processing_stats",
   "needs_review",
   "element_id",
-  "error"
+  "error",
+  "confidence_threshold"
 ]);
 
 // Get type from an object for preview
