@@ -59,7 +59,13 @@ function App() {
       while (true) {
         try {
           const response = await fetchDocuments();
-          setDocuments(response.documents ?? []);
+          const docs = response.documents ?? [];
+          setDocuments(docs);
+          setProcessedDocumentIds((prev) => {
+            const ids = new Set(prev);
+            docs.forEach((doc) => ids.add(doc.document_id));
+            return Array.from(ids);
+          });
           return true;
         } catch (err) {
           console.error("Failed to fetch documents (attempt %d)", attempt + 1, err);
@@ -153,6 +159,9 @@ function App() {
           if (cancelled) return;
           setOntology(data);
           setLoadingOntology(false);
+          setProcessedDocumentIds((prev) =>
+            prev.includes(selectedDocument) ? prev : [...prev, selectedDocument]
+          );
           return;
         } catch (err: any) {
           if (cancelled) return;
