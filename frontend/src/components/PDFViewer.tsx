@@ -138,8 +138,8 @@ const PDFViewer = ({
         </div>
       </div>
 
-      <div className="pdf-canvas-wrapper" style={{ position: "relative" }}>
-        <canvas ref={canvasRef} />
+      <div className="pdf-canvas-wrapper" style={{ position: "relative", display: "inline-block" }}>
+        <canvas ref={canvasRef} style={{ display: "block" }} />
         {sortedMatches.length > 0 && (
           <div
             style={{
